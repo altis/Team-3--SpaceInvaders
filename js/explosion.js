@@ -9,7 +9,7 @@ function CreateExplosion(posX, posY){
     var mouseY=posY;
     
     var speed=5;
-    var size=20;
+    var size=5;
     iterations=0;
     var timer;
     //The class we will use to store particles. It includes x and y
@@ -36,7 +36,7 @@ function CreateExplosion(posX, posY){
        stage.globalCompositeOperation="lighter"
       }, 0);
     }
-    let tem=false;
+   
     function init() {
       
       //Reference to the HTML element
