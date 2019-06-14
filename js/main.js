@@ -2,11 +2,16 @@
 var canvas = document.querySelector('canvas');
 var scoreBoard = document.getElementById(`score`)
 var levelBoard = document.getElementById('level')
+var lifeCanvas = document.getElementById ('diplayLife')
+console.log(lifeCanvas)
 //scoreBoard.innerHTML = "Hello"
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth-300;
+lifeCanvas.width = 150;
+lifeCanvas.height = 100;
 
 var draw = canvas.getContext('2d');
+var drawLife = lifeCanvas.getContext('2d');
 let playerimg = new Image();
 let bulletImg = new Image();
 bulletImg.src = './img/Bullet.png'
@@ -44,6 +49,7 @@ let player = {
     }
 }
 //Code By Altis
+
 class InvadersObj  {
     constructor(x, y) { 
         //Set default width and height
@@ -143,7 +149,19 @@ nextFrame=()=>{
         else bulletOnScreen.splice(bulOnScr,1)   
     }
     player.draw();
-    window.requestAnimationFrame((timeStamp) => {nextFrame(timeStamp)});
+    renderLife();
+   window.requestAnimationFrame(nextFrame) //((timeStamp) => {nextFrame(timeStamp)});
+   // setInterval(nextFrame,100)
+}
+renderLife=()=>{
+    var x = 5, y=5;
+    
+    drawLife.clearRect(0,0,150,100);
+    for(n=0;n<maxBullet-bulletOnScreen.length;n++){
+        drawLife.fillRect(x,y,5,5)
+        x+=20;
+    }
+    //console.table(bulletOnScreen)
 }
 
 //Adding Event Listener
