@@ -3,24 +3,19 @@ var canvas = document.querySelector('canvas');
 var scoreBoard = document.getElementById(`score`)
 var levelBoard = document.getElementById('level')
 var lifeCanvas = document.getElementById ('diplayLife')
-console.log(lifeCanvas)
-//scoreBoard.innerHTML = "Hello"
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth-300;
 lifeCanvas.width = 150;
 lifeCanvas.height = 100;
-
 var draw = canvas.getContext('2d');
 var drawLife = lifeCanvas.getContext('2d');
-let playerimg = new Image();
-let bulletImg = new Image();
-bulletImg.src = './img/Bullet.png'
-playerimg.src= './img/HeroShip.png';
-score = 0;
-level=1;
+let gameState = {
+    score : 0,
+    level:1
+}
 
-levelBoard.innerHTML = level;
-//-----------------------Code from Liam -- Hero------------//
+levelBoard.innerHTML = gameState.level;
+//----------------------- Hero------------//
 let player = {
     width: 100,
     height: 50,
@@ -58,7 +53,8 @@ class InvadersObj  {
         this.width = 25;
         this.height = 25;
         this.oldTimeStamp = 0;
-        this.draw(); //render the invader for first time
+        this.draw();
+         //render the invader for first time
 
     }
     updatePosition() {
@@ -96,12 +92,13 @@ class spaceInvaders{
         this.y = y;
         this.width = 5;
         this.height = 5;
+        this.state = true;
     }
 }
-
 spaceInvaders = [];
 var bulletOnScreen=[];
 var maxBullet = 8;
+
 class GameContainer extends InvadersObj {
     constructor() {
        super();
@@ -126,42 +123,66 @@ collisionDetect=(x1,y1,w1,h1,x2,y2,w2,h2)=>{
    return x2 > w1 + x1 || x1 > w2 + x2 || y2 > h1 + y1 || y1 > h2 + y2 ? false : true
 }
 nextFrame=()=>{
-    for(let spaInv in spaceInvaders)
-        spaceInvaders[spaInv].updatePosition();
-    for (let bulOnScr in bulletOnScreen){
-        for(let spaInv in spaceInvaders){
-          if(collisionDetect(spaceInvaders[spaInv].x,spaceInvaders[spaInv].y,spaceInvaders[spaInv].width,spaceInvaders[spaInv].height,
-                bulletOnScreen[bulOnScr].x,bulletOnScreen[bulOnScr].y,5,5) ){ 
-                draw.clearRect(spaceInvaders[spaInv].x-10,spaceInvaders[spaInv].y,45,45);
+    bulletOnScreenITR = [...bulletOnScreen];
+    spaceInvadersITR = [...spaceInvaders];
+    for (let bulOnScr in bulletOnScreenITR){
+        //draw.clearRect(bulletOnScreenITR[bulOnScr].x, bulletOnScreenITR[bulOnScr].y, 6, 6)
+        for(let spaInv in spaceInvadersITR){
+           
+          if(colDetect=collisionDetect(spaceInvadersITR[spaInv].x,spaceInvadersITR[spaInv].y,spaceInvadersITR[spaInv].width,spaceInvadersITR[spaInv].height,
+            bulletOnScreenITR[bulOnScr].x,bulletOnScreenITR[bulOnScr].y,5,5) ){ 
+                draw.clearRect(spaceInvadersITR[spaInv].x-10,spaceInvadersITR[spaInv].y,45,45);
                 //draw.clearRect(0,0,canvas.width,canvas.height)
                 spaceInvaders.splice(spaInv,1);
-                draw.clearRect(bulletOnScreen[bulOnScr].x,bulletOnScreen[bulOnScr].y, 6, 6)
-                bulletOnScreen.splice(bulOnScr,0)
-                score+=10;
-                scoreBoard.innerHTML = score;
+                spaceInvaders[spaInv].state = false;
+                draw.clearRect(bulletOnScreenITR[bulOnScr].x,bulletOnScreenITR[bulOnScr].y, 6, 6)
+                //bulletOnScreen.splice(bulOnScr,1)
+                bulletOnScreen[bulOnScr].state = false;
+                gameState.score+=10;
+                scoreBoard.innerHTML =  gameState.score;
                 //CreateExplosion(bulletOnScreen[bulOnScr].x,bulletOnScreen[bulOnScr].y)
-                //break;
             }
         }
-        draw.clearRect(bulletOnScreen[bulOnScr].x, bulletOnScreen[bulOnScr].y, 6, 6)
-        if (bulletOnScreen[bulOnScr].y-=1)
+        console.table(bulletOnScreen)
+        console.log(bulOnScr)
+        if(bulletOnScreen.length>0){ 
+        if (bulletOnScreenITR[bulOnScr].y){
+        bulletOnScreen[bulOnScr].y--;
         draw.fillRect(bulletOnScreen[bulOnScr].x,bulletOnScreen[bulOnScr].y,5,5)
-        else bulletOnScreen.splice(bulOnScr,1)   
+        }
+        else bulletOnScreen.splice(bulOnScr,1) }
+
     }
+    //Task to remove dead alliens, bullets and bullets from off screen
+    for (let bulOnScr in bulletOnScreenITR){
+        if(bulletOnScreen[bulOnScr].state == false)
+            bulletOnScreen.splice(bulOnScr,1)
+        else {
+            draw.clearRect(bulletOnScreenITR[bulOnScr].x, bulletOnScreenITR[bulOnScr].y, 6, 6)
+            
+        }
+    }
+
+    for(let spaInv in spaceInvaders)
+        spaceInvaders[spaInv].updatePosition();
     player.draw();
-    renderLife();
-   window.requestAnimationFrame(nextFrame) //((timeStamp) => {nextFrame(timeStamp)});
+    renderLife();    
+    window.requestAnimationFrame(nextFrame) //((timeStamp) => {nextFrame(timeStamp)});
    // setInterval(nextFrame,100)
 }
+nextLevel=()=>{
+    gameState.level += 1;
+    gameState.score = 0;
+    console.log("Next Level")
+}
+
 renderLife=()=>{
     var x = 5, y=5;
-    
     drawLife.clearRect(0,0,150,100);
     for(n=0;n<maxBullet-bulletOnScreen.length;n++){
         drawLife.fillRect(x,y,5,5)
         x+=20;
     }
-    //console.table(bulletOnScreen)
 }
 
 //Adding Event Listener
@@ -174,7 +195,7 @@ addEventListener('keydown', function(event){
     if(event.code == "Space"){
         //bulletObj.draw(player.x,player.y);
         if(bulletOnScreen.length<maxBullet){
-        bulletOnScreen.push({x:player.x+50,y:player.y-10})
+        bulletOnScreen.push({x:player.x+50,y:player.y-10, state:true})
         draw.fillRect(player.x+50,player.y-10, 5, 5)
         }
         //console.log(bulletOnScreen)
@@ -182,7 +203,4 @@ addEventListener('keydown', function(event){
 })
 let GameStart = new GameContainer();
 GameStart.start();
-
-//window.requestAnimationFrame((timeStamp) => {this.moveInvaders(timeStamp)});
-//setInterval(moveInvaders,30);
 nextFrame();
